@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bookshelf import get_model, storage
+from bookshelf import model, storage
 from flask import Blueprint, current_app, redirect, render_template, request, \
     url_for
 
@@ -48,7 +48,7 @@ def list():
     if token:
         token = token.encode('utf-8')
 
-    books, next_page_token = get_model().list(cursor=token)
+    books, next_page_token = model.list(cursor=token)
 
     return render_template(
         "list.html",
@@ -58,7 +58,7 @@ def list():
 
 @crud.route('/<id>')
 def view(id):
-    book = get_model().read(id)
+    book = model.read(id)
     return render_template("view.html", book=book)
 
 
@@ -77,7 +77,7 @@ def add():
             data['imageUrl'] = image_url
         # [END image_url2]
 
-        book = get_model().create(data)
+        book = model.create(data)
 
         return redirect(url_for('.view', id=book['id']))
 
@@ -86,7 +86,7 @@ def add():
 
 @crud.route('/<id>/edit', methods=['GET', 'POST'])
 def edit(id):
-    book = get_model().read(id)
+    book = model.read(id)
 
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
@@ -96,7 +96,7 @@ def edit(id):
         if image_url:
             data['imageUrl'] = image_url
 
-        book = get_model().update(data, id)
+        book = model.update(data, id)
 
         return redirect(url_for('.view', id=book['id']))
 
@@ -105,5 +105,5 @@ def edit(id):
 
 @crud.route('/<id>/delete')
 def delete(id):
-    get_model().delete(id)
+    model.delete(id)
     return redirect(url_for('.list'))

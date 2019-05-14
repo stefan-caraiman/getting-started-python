@@ -12,82 +12,67 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+"""
+model.py - Handles interacting with the actual data storage. This uses Cloud
+Firestore with a collection called 'books'.
+"""
+
+
 from flask import current_app
-from google.cloud import datastore
-
-
-builtin_list = list
+from google.cloud import firestore
 
 
 def init_app(app):
     pass
 
 
-def get_client():
-    return datastore.Client(current_app.config['PROJECT_ID'])
-
-
-def from_datastore(entity):
-    """Translates Datastore results into the format expected by the
-    application.
-
-    Datastore typically returns:
-        [Entity{key: (kind, id), prop: val, ...}]
-
-    This returns:
-        {id: id, prop: val, ...}
-    """
-    if not entity:
-        return None
-    if isinstance(entity, builtin_list):
-        entity = entity.pop()
-
-    entity['id'] = entity.key.id
-    return entity
+def get_collection():
+    client = firestore.Client(current_app.config['PROJECT_ID'])
+    return client.collection("books")
 
 
 def list(limit=10, cursor=None):
-    ds = get_client()
+    books = get_collection()
 
-    query = ds.query(kind='Book', order=['title'])
-    query_iterator = query.fetch(limit=limit, start_cursor=cursor)
-    page = next(query_iterator.pages)
+    query = books.order_by("title").limit(limit)
+    if cursor is not None:
+        # cursor is the document id of the last book displayed
+        doc_snapshot = books.document(cursor).get()
+        if doc_snapshot.to_dict() is not None:
+            query = query.start_after(cursor)
 
-    entities = builtin_list(map(from_datastore, page))
-    next_cursor = (
-        query_iterator.next_page_token.decode('utf-8')
-        if query_iterator.next_page_token else None)
+    docs = [doc for doc in query.stream()]
+    results = [doc.to_dict() for doc in docs]
 
-    return entities, next_cursor
+    next_cursor = None
+    if len(docs) > 0:
+        next_cursor = docs[-1].id
+
+    return results, next_cursor
 
 
 def read(id):
-    ds = get_client()
-    key = ds.key('Book', int(id))
-    results = ds.get(key)
-    return from_datastore(results)
+    books = get_collection()
+    result = books.document(key).get().to_dict()
+    return result
 
 
-def update(data, id=None):
-    ds = get_client()
-    if id:
-        key = ds.key('Book', int(id))
-    else:
-        key = ds.key('Book')
+def update(data, id):
+    books = get_collection()
+    doc = books.document(id).get()
 
-    entity = datastore.Entity(
-        key=key,
-        exclude_from_indexes=['description'])
-
-    entity.update(data)
-    ds.put(entity)
-    return from_datastore(entity)
+    doc.update(data)
+    return doc.to_dict()
 
 
-create = update
+def create(data):
+    books = get_collection()
+    doc = books.add(data)
+    return doc.to_dict()
 
 
 def delete(id):
-    ds = get_client()
-    key = ds.key('Book', int(id))
-    ds.delete(key)
+    books = get_collection()
+    doc = books.document(id)
+    doc.delete()

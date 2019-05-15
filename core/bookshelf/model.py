@@ -28,7 +28,7 @@ def init_app(app):
 
 
 def get_collection():
-    client = firestore.Client(current_app.config['PROJECT_ID'])
+    client = firestore.Client()
     return client.collection("books")
 
 
@@ -54,7 +54,7 @@ def list(limit=10, cursor=None):
 
 def read(id):
     books = get_collection()
-    result = books.document(key).get().to_dict()
+    result = books.document(id).get().to_dict()
     return result
 
 
@@ -68,8 +68,8 @@ def update(data, id):
 
 def create(data):
     books = get_collection()
-    doc = books.add(data)
-    return doc.to_dict()
+    update_time, doc_ref = books.add(data)
+    return doc_ref
 
 
 def delete(id):

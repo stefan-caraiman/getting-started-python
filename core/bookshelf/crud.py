@@ -79,7 +79,7 @@ def add():
 
         book = model.create(data)
 
-        return redirect(url_for('.view', id=book['id']))
+        return redirect(url_for('.view', id=book.id))
 
     return render_template("form.html", action="Add", book={})
 

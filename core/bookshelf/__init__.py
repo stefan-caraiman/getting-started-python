@@ -18,9 +18,8 @@ from flask import current_app, Flask, redirect, url_for
 from bookshelf import model
 
 
-def create_app(config, debug=False, testing=False, config_overrides=None):
+def create_app(debug=False, testing=False, config_overrides=None):
     app = Flask(__name__)
-    app.config.from_object(config)
 
     app.debug = debug
     app.testing = testing

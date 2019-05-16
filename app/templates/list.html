@@ -1,5 +1,5 @@
 {#
-# Copyright 2015 Google Inc.
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,14 +19,14 @@
 {% block content %}
 
 <h3>Books</h3>
-<a href="/books/add" class="btn btn-success btn-sm">
+<a href="/add" class="btn btn-success btn-sm">
   <i class="glyphicon glyphicon-plus"></i>
   Add book
 </a>
 
 {% for book in books %}
 <div class="media">
-  <a href="/books/{{book.id}}">
+  <a href="/book/{{book.id}}">
     <div class="media-left">
       {% if book.imageUrl %}
         <img src="{{book.imageUrl}}">

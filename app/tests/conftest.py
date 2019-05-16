@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc.
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,16 +22,8 @@ import pytest
 from retrying import retry
 
 
-@pytest.yield_fixture(params=['datastore', 'cloudsql', 'mongodb'])
-def app(request):
-    """This fixtures provides a Flask app instance configured for testing.
-
-    Because it's parametric, it will cause every test that uses this fixture
-    to run three times: one time for each backend (datastore, cloudsql, and
-    mongodb).
-
-    It also ensures the tests run within a request context, allowing
-    any calls to flask.request, flask.current_app, etc. to work."""
+@pytest.fixture()
+def app():
     app = bookshelf.create_app(
         config,
         testing=True,

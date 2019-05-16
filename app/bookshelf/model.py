@@ -16,15 +16,16 @@
 """
 model.py - Handles interacting with the actual data storage. This uses Cloud
 Firestore with a collection called 'books'.
+
+Every stored element contains a dictionary of data, and has a unique
+identifier, that is not stored as data. However, we add that identifier to
+the returned data when fetched, as it is used by the main program to
+create URL paths.
 """
 
 
 from flask import current_app
 from google.cloud import firestore
-
-
-def init_app(app):
-    pass
 
 
 def get_collection():
@@ -40,14 +41,17 @@ def list(limit=10, cursor=None):
         # cursor is the document id of the last book displayed
         doc_snapshot = books.document(cursor).get()
         if doc_snapshot.to_dict() is not None:
-            query = query.start_after(cursor)
+            query = query.start_after(doc_snapshot)
 
-    docs = [doc for doc in query.stream()]
-    results = [doc.to_dict() for doc in docs]
+    results = []
+    for doc in query.stream():
+        result = doc.to_dict()  # Includes data, but not ID
+        result["id"] = doc.id   # Templates need unique ID, too
+        results.append(result)
 
     next_cursor = None
-    if len(docs) > 0:
-        next_cursor = docs[-1].id
+    if len(results) >= limit:
+        next_cursor = results[-1]["id"]
 
     return results, next_cursor
 
@@ -55,21 +59,26 @@ def list(limit=10, cursor=None):
 def read(id):
     books = get_collection()
     result = books.document(id).get().to_dict()
+    result["id"] = id
     return result
 
 
 def update(data, id):
     books = get_collection()
-    doc = books.document(id).get()
+    doc = books.document(id)
 
     doc.update(data)
-    return doc.to_dict()
+    result = doc.get().to_dict()
+    result["id"] = id
+    return result
 
 
 def create(data):
     books = get_collection()
     update_time, doc_ref = books.add(data)
-    return doc_ref
+    result = doc_ref.get().to_dict()
+    result["id"] = id
+    return result
 
 
 def delete(id):

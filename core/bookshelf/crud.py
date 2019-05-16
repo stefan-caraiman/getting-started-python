@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc.
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from bookshelf import model, storage
-from flask import Blueprint, current_app, redirect, render_template, request, \
-    url_for
-
-
-crud = Blueprint('crud', __name__)
+from flask import current_app, redirect, render_template, request, url_for
 
 
 # [START upload_image_file]
@@ -42,7 +39,7 @@ def upload_image_file(file):
 # [END upload_image_file]
 
 
-@crud.route("/")
+@route("/")
 def list():
     token = request.args.get('page_token', None)
     if token:
@@ -56,15 +53,18 @@ def list():
         next_page_token=next_page_token)
 
 
-@crud.route('/<id>')
+@route('/<id>')
 def view(id):
     book = model.read(id)
     return render_template("view.html", book=book)
 
 
-@crud.route('/add', methods=['GET', 'POST'])
+@route('/add', methods=['GET', 'POST'])
 def add():
-    if request.method == 'POST':
+    if request.method == 'GET':
+        return render_template("form.html", action="Add", book={})
+
+    else:  # It's POST
         data = request.form.to_dict(flat=True)
 
         # If an image was uploaded, update the data to point to the new image.
@@ -79,12 +79,10 @@ def add():
 
         book = model.create(data)
 
-        return redirect(url_for('.view', id=book.id))
-
-    return render_template("form.html", action="Add", book={})
+        return redirect(url_for('/view', id=book.id))
 
 
-@crud.route('/<id>/edit', methods=['GET', 'POST'])
+@route('/<id>/edit', methods=['GET', 'POST'])
 def edit(id):
     book = model.read(id)
 
@@ -98,12 +96,12 @@ def edit(id):
 
         book = model.update(data, id)
 
-        return redirect(url_for('.view', id=book['id']))
+        return redirect(url_for('/view', id=book['id']))
 
     return render_template("form.html", action="Edit", book=book)
 
 
-@crud.route('/<id>/delete')
+@route('/<id>/delete')
 def delete(id):
     model.delete(id)
-    return redirect(url_for('.list'))
+    return redirect(url_for('/list'))

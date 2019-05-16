@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc.
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ def upload_file(contents, filename, content_type):
     bucket = client.bucket(os.environ["CLOUD_STORAGE_BUCKET"])
     blob = bucket.blob(str(uuid4()))
 
-    blob.content_disposition = "inline;filename={}.{}".format(name, extension)
+    blob.content_disposition = "inline;filename={}{}".format(name, extension)
     blob.upload_from_string(
         contents,
         content_type=content_type)

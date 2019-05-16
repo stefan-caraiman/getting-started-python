@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc.
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,15 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This file specifies your Python application's runtime configuration.
-# See https://cloud.google.com/appengine/docs/managed-vms/python/runtime
-# for details.
+runtime: python37
 
-# [START runtime]
-runtime: python
-env: flex
-entrypoint: gunicorn -b :$PORT main:app
-
-runtime_config:
-  python_version: 3
-# [END runtime]
+env_variables:
+  BUCKET_NAME: "your-bucket-name"

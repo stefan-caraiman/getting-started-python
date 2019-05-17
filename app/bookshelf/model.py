@@ -23,14 +23,14 @@ the returned data when fetched, as it is used by the main program to
 create URL paths.
 """
 
+COLLECTION = "books"
 
-from flask import current_app
 from google.cloud import firestore
 
 
 def get_collection():
     client = firestore.Client()
-    return client.collection("books")
+    return client.collection(COLLECTION)
 
 
 def list(limit=10, cursor=None):

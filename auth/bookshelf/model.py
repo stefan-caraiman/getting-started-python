@@ -56,6 +56,33 @@ def list(limit=10, cursor=None):
     return results, next_cursor
 
 
+def list_by_user(limit=10, cursor=None, user_id=None):
+    if user_id is None:
+        return [], None
+
+    books = get_collection()
+
+    query = books.where('createdById', '==', user_id)
+    query = query.order_by("title").limit(limit)
+    if cursor is not None:
+        # cursor is the document id of the last book displayed
+        doc_snapshot = books.document(cursor).get()
+        if doc_snapshot.to_dict() is not None:
+            query = query.start_after(doc_snapshot)
+
+    results = []
+    for doc in query.stream():
+        result = doc.to_dict()  # Includes data, but not ID
+        result["id"] = doc.id   # Templates need unique ID, too
+        results.append(result)
+
+    next_cursor = None
+    if len(results) >= limit:
+        next_cursor = results[-1]["id"]
+
+    return results, next_cursor
+
+
 def read(id):
     books = get_collection()
     result = books.document(id).get().to_dict()
